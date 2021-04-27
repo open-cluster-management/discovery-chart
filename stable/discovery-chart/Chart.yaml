@@ -1,0 +1,13 @@
+
+# Copyright (c) 2021 Red Hat, Inc.
+# Copyright Contributors to the Open Cluster Management project
+
+apiVersion: v1
+appVersion: "2.3.0"
+description: Helm chart for Open Cluster Management Discovery
+name: discovery-operator
+version: 2.3.0
+category: "Development"
+kubeVersion: ">=1.18.0-0"
+keywords:
+  - discovery

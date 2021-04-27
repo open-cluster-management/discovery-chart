@@ -1,0 +1,43 @@
+
+# Copyright (c) 2021 Red Hat, Inc.
+# Copyright Contributors to the Open Cluster Management project
+
+org: open-cluster-management
+
+global:
+  pullPolicy: Always
+  pullSecret: null
+  arch:
+  - amd64
+  - ppc64le
+  - s390x
+  imageOverrides:
+    discovery_operator: ""
+    
+hubconfig:
+  nodeSelector: null
+  replicaCount: 1
+  proxyConfigs: {}
+
+client:
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 70
+        podAffinityTerm:
+          topologyKey: topology.kubernetes.io/zone
+          labelSelector:
+            matchExpressions:
+            - key: ocm-antiaffinity-selector
+              operator: In
+              values:
+              - discovery-operator 
+      - weight: 35
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchExpressions:
+            - key: ocm-antiaffinity-selector
+              operator: In
+              values:
+              - discovery-operator 

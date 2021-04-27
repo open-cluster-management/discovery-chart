@@ -1,0 +1,20 @@
+# Copyright Contributors to the Open Cluster Management project
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ .Values.org }}:{{ .Release.Name }}:discovery-leader-election
+  labels:
+    app: {{ .Chart.Name }}
+    chart: {{.Chart.Name}}-{{.Chart.Version}}
+    component: {{ .Chart.Name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ .Values.org }}:{{ .Release.Name }}:discovery-leader-election
+subjects:
+- kind: ServiceAccount
+  name: {{ .Chart.Name }}
+  namespace: {{ .Release.Namespace }}

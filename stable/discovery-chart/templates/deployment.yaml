@@ -1,0 +1,91 @@
+
+# Copyright (c) 2021 Red Hat, Inc.
+# Copyright Contributors to the Open Cluster Management project
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}
+  labels:
+    app: {{ .Chart.Name }}
+    chart: {{.Chart.Name}}-{{.Chart.Version}}
+    component: {{ .Chart.Name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}
+  replicas: {{ .Values.hubconfig.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}
+        ocm-antiaffinity-selector: {{ .Chart.Name }}
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: beta.kubernetes.io/arch
+                operator: In
+                values:
+                {{- range .Values.global.arch }}
+                - {{ . }}
+                {{- end }}
+        {{- with .Values.client.affinity.podAntiAffinity }}
+        podAntiAffinity: 
+{{ toYaml . | indent 10 }}
+        {{- end }}
+      tolerations:
+        - key: dedicated
+          operator: Exists
+          effect: NoSchedule
+        - effect: NoSchedule 
+          key: node-role.kubernetes.io/infra 
+          operator: Exists
+      hostNetwork: false
+      hostPID: false
+      hostIPC: false
+      securityContext:
+        runAsNonRoot: true
+      containers:
+      - command:
+        - /manager
+        args:
+        - --enable-leader-election
+        image: {{ .Values.global.imageOverrides.discovery_operator }}
+        imagePullPolicy: {{ .Values.global.pullPolicy }}
+        name: discovery-operator
+        env:
+        {{- if .Values.hubconfig.proxyConfigs }}
+          - name: HTTP_PROXY
+            value: {{ .Values.hubconfig.proxyConfigs.HTTP_PROXY }}
+          - name: HTTPS_PROXY
+            value: {{ .Values.hubconfig.proxyConfigs.HTTPS_PROXY }}
+          - name: NO_PROXY
+            value: {{ .Values.hubconfig.proxyConfigs.NO_PROXY }}
+        {{- end }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          privileged: false
+          readOnlyRootFilesystem: true
+        resources:
+          limits:
+            cpu: 300m
+            memory: 500Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+      terminationGracePeriodSeconds: 10
+      imagePullSecrets:
+        - name: discovery-operator-pull-secret
+      serviceAccountName: {{ .Chart.Name }}
+      {{- with .Values.hubconfig.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+      {{- end }}
