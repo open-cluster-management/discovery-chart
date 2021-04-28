@@ -12,5 +12,5 @@ package:
 lint:
 	helm lint stable/discovery-chart
 
-install:
+install: package
 	helm install $(NAME) stable/discovery-chart --version $(VERSION)
