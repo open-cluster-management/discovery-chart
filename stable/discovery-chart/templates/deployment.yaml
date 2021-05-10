@@ -54,7 +54,7 @@ spec:
       - command:
         - /manager
         args:
-        - --enable-leader-election
+        - --leader-elect
         image: {{ .Values.global.imageOverrides.discovery_operator }}
         imagePullPolicy: {{ .Values.global.pullPolicy }}
         name: discovery-operator
@@ -74,6 +74,18 @@ spec:
             - ALL
           privileged: false
           readOnlyRootFilesystem: true
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
         resources:
           limits:
             cpu: 300m
