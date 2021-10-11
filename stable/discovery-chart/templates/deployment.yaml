@@ -97,8 +97,10 @@ spec:
             cpu: 100m
             memory: 100Mi
       terminationGracePeriodSeconds: 10
+      {{- if .Values.global.pullSecret }}
       imagePullSecrets:
-        - name: discovery-operator-pull-secret
+      - name: {{ .Values.global.pullSecret }}
+      {{- end }}
       serviceAccountName: {{ .Chart.Name }}
       {{- with .Values.hubconfig.nodeSelector }}
       nodeSelector:
